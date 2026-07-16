@@ -30,10 +30,79 @@ export class ProjectsManager {
             if (!(projectsPage && detailsPage)) {return}
             projectsPage.style.display = "none"
             detailsPage.style.display = "flex"
+            this.setDetailsPage(project)
         })
         this.ui.append(project.ui)
         this.list.push(project)
         return project
+    }
+
+    private setDetailsPage(project: Project) {
+        const detailsPage = document.getElementById("project-details")
+        if (!detailsPage) { return }
+
+        const keys = [
+            "name", 
+            "description", 
+            "status", 
+            "userRole", 
+            "finishDate", 
+            "cost", 
+            "progress",
+            "initials"
+        ]
+
+        for (const key of keys) {
+            const elements = detailsPage.querySelectorAll(`[data-project-info="${key}"]`)
+            elements.forEach((element) => {
+                switch (key) {
+                    case "finishDate":
+                        // Precaución con la fecha: formateo correcto
+                        const date = project.finishDate instanceof Date 
+                            ? project.finishDate 
+                            : new Date(project.finishDate)
+                        
+                        element.textContent = date.toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        })
+                        break
+
+                    case "progress":
+                        element.textContent = `${project.progress}%`
+                        
+                        // Si el elemento es una barra de progreso visual (un DIV), actualizamos su ancho
+                        if (element instanceof HTMLElement && element.tagName === "DIV") {
+                            element.style.width = `${project.progress}%`
+                        }
+                        break
+
+                    case "cost":
+                        element.textContent = `$${project.cost.toLocaleString()}`
+                        break
+
+                    case "initials":
+                        // Generamos las iniciales dinámicamente
+                        const initials = project.name
+                            .split(" ")
+                            .map(word => word[0])
+                            .join("")
+                            .slice(0, 2)
+                            .toUpperCase()
+                        
+                        element.textContent = initials
+                        break
+
+                    default:
+                        // Para propiedades simples (name, description, status, userRole)
+                        if (key in project) {
+                            element.textContent = String(project[key as keyof Project])
+                        }
+                        break
+                }
+            })
+        }
     }
 
     getProject(id: string) {
