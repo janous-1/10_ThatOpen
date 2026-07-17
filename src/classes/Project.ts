@@ -2,6 +2,13 @@ import { v4 as uuidv4 } from 'uuid'
 
 export type ProjectStatus = "Pending" | "Active" | "Finished"
 export type UserRole = "Architect" | "Engineer" | "Developer"
+export type ToDoStatus = "Pending" | "Active" | "Done"
+
+export interface IToDo {
+    id: string
+    text: string
+    status: ToDoStatus
+}
 
 export interface IProject {
     name: string
@@ -9,39 +16,84 @@ export interface IProject {
     status: ProjectStatus
     userRole: UserRole
     finishDate: Date
+    cost?: number
+    progress?: number
+    todos?: IToDo[] // Desafío 7: Hacemos compatible la importación
 }
 
 export class Project implements IProject {
-    //To satisfy IProject
     name: string
     description: string
-    status: "Pending" | "Active" | "Finished"
-    userRole: "Architect" | "Engineer" | "Developer"
+    status: ProjectStatus
+    userRole: UserRole
     finishDate: Date
+    todos: IToDo[] = [] // Inicializamos array de To-Dos
 
-    //Class internals
+    // Class internals
     ui!: HTMLDivElement
     cost: number = 0
     progress: number = 0
     id: string
-
+    iconColor: string
 
     constructor(data: IProject) {
         for (const key in data) {
+            if (key === "ui") continue;
             this[key] = data[key]
         }
+        if (typeof this.finishDate === "string") {
+            this.finishDate = new Date(this.finishDate);
+        }
         this.id = uuidv4()
+        if (data.todos) {
+            this.todos = data.todos
+        }
+        if (!this.ui || !(this.ui instanceof HTMLDivElement)) {
+            this.ui = document.createElement("div");
+            this.ui.className = "project-card";
+        }
+        const colors = ["#B1BBD8", "#7284B8", "#46578B", "#D8B1C5", "#B87296", "#8B466A"]
+        this.iconColor = colors[Math.floor(Math.random() * colors.length)]
         this.setUI()
     }
 
-    // creates the project card UI
+
+    getInitials() {
+        const trimmedName = this.name.trim()
+        const words = trimmedName.split(/\s+/).filter(word => word.length > 0)
+        let initials = ""
+
+        if (words.length >= 2) {
+            initials = words[0].charAt(0) + words[1].charAt(0)
+        } else if (words.length === 1) {
+            initials = words[0].slice(0, 2)
+        }
+        return initials
+    }
+    // Creates or updates the project card UI
     setUI() {
-        if (this.ui) {return}
-        this.ui = document.createElement("div")
-        this.ui.className = "project-card"
+        if (!this.ui) {
+            this.ui = document.createElement("div")
+            this.ui.className = "project-card"
+        }
+
+        // Desafíos 1 y 2: Selección de color aleatorio y mayúsculas en CSS
+        const colors = ["#B1BBD8", "#7284B8", "#46578B", "#D8B1C5", "#B87296", "#8B466A"]
+        const randomColor = colors[Math.floor(Math.random() * colors.length)]
+
+        const trimmedName = this.name.trim()
+        const words = trimmedName.split(/\s+/).filter(word => word.length > 0)
+        let initials = ""
+
+        if (words.length >= 2) {
+            initials = words[0].charAt(0) + words[1].charAt(0)
+        } else if (words.length === 1) {
+            initials = words[0].slice(0, 2)
+        }
+
         this.ui.innerHTML = `
         <div class="card-header">
-            <p style="background-color: #ca8134; padding: 10px; border-radius: 8px; aspect-ratio: 1;">HC</p>
+            <p style="background-color: ${this.iconColor}; padding: 10px; border-radius: 8px; aspect-ratio: 1; text-transform: uppercase;">${this.getInitials()}</p>
             <div>
                 <h5>${this.name}</h5>
                 <p>${this.description}</p>
@@ -62,9 +114,8 @@ export class Project implements IProject {
             </div>
             <div class="card-property">
                 <p style="color: #969696;">Estimated Progress</p>
-                <p>${this.progress * 100}%</p>
+                <p>${this.progress}%</p>
             </div>
         </div>`
     }
 }
-

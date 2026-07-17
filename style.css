@@ -361,3 +361,37 @@ input:focus, textarea:focus, select:focus {
     color: rgba(255, 255, 255, 0.8);
     line-height: 1.5;
 }
+
+/* Estilos para el contenedor del Modal */
+dialog#new-todo-modal {
+    border: none; /* Quitamos el borde por defecto */
+    border-radius: 12px;
+    padding: 24px;
+    background-color: var(--background-100); /* Usamos tu color de fondo oscuro */
+    color: white; /* Aseguramos que el texto sea legible */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Sombra para que destaque */
+    width: 90%;
+    max-width: 500px; /* Tamaño máximo razonable */
+}
+
+/* Estilos para el fondo oscuro que bloquea el resto de la web */
+dialog#new-todo-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+}
+
+/* Estilos para el contenedor del Modal */
+dialog#edit-project-modal {
+    border: none; /* Quitamos el borde por defecto */
+    border-radius: 12px;
+    padding: 24px;
+    background-color: var(--background-100); /* Usamos tu color de fondo oscuro */
+    color: white; /* Aseguramos que el texto sea legible */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Sombra para que destaque */
+    width: 90%;
+    max-width: 500px; /* Tamaño máximo razonable */
+}
+
+/* Estilos para el fondo oscuro que bloquea el resto de la web */
+dialog#edit-project-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente */
+}
