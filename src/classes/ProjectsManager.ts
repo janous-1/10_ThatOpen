@@ -1,17 +1,19 @@
-import { IProject, Project, ToDoStatus } from "./Project"
+import { IProject, Project } from "./Project"
 
 export class ProjectsManager {
     list: Project[] = []
-    ui: HTMLElement
     currentProject: Project | null = null
 
-    constructor(container: HTMLElement) {
-        this.ui = container
+    // Callbacks para comunicar la creación/eliminación a React y actualizar el estado
+    onProjectCreated = (project: Project) => {}
+    onProjectDeleted = () => {}
+
+    constructor() {
         this.newProject({
             name: "Default Project",
             description: "This is just a default app project",
-            status: "Pending",
-            userRole: "Engineer",
+            status: "pending", 
+            userRole: "architect", 
             finishDate: new Date(),
             todos: [
                 {
@@ -23,62 +25,41 @@ export class ProjectsManager {
         })
     }
 
+    filterProjects(value: string) {
+        const filteredProjects = this.list.filter((project) => {
+        return project.name.includes(value)
+        })
+        return filteredProjects
+    }
+
     newProject(data: IProject) {
+        // 1. Validación de longitud mínima (Tu requerimiento)
         if (data.name.length < 5) {
             throw new Error("The project name must contain at least 5 characters.")
         }      
         
-        const projectToUpdate = this.list.find(
-            (project) => project.name.toLowerCase() === data.name.toLowerCase()
-        )
-        
-        if (projectToUpdate) {
-            projectToUpdate.name = data.name
-            projectToUpdate.description = data.description
-            projectToUpdate.status = data.status
-            projectToUpdate.userRole = data.userRole
-            projectToUpdate.finishDate = data.finishDate
-            if (data.cost !== undefined) {
-                projectToUpdate.cost = data.cost;
-            }
-            if (data.progress !== undefined) {
-                projectToUpdate.progress = data.progress;
-            }
-            if (data.todos) {
-                projectToUpdate.todos = data.todos
-            }
-            
-            projectToUpdate.setUI()
-            this.setDetailsPage(projectToUpdate) 
-            
-            return projectToUpdate
+        // 2. Validación de nombres duplicados (Requerimiento del profesor)
+        const projectNames = this.list.map((project) => project.name)
+        const nameInUse = projectNames.includes(data.name)
+        if (nameInUse) {
+            throw new Error(`A project with the name "${data.name}" already exists`)
         }
 
         const project = new Project(data)
-        project.ui.addEventListener("click", () => {
-            const projectsPage = document.getElementById("projects-page")
-            const detailsPage = document.getElementById("project-details")
-            if (!(projectsPage && detailsPage)) { return }
-            projectsPage.style.display = "none"
-            detailsPage.style.display = "flex"
-            this.setDetailsPage(project)
-            this.renderToDos(project)
-        })
-        
-        this.ui.append(project.ui)
         this.list.push(project)
+        
+        // Notificamos a React para que actualice la interfaz
+        this.onProjectCreated(project) 
+        
         return project
     }
 
     getProject(id: string) {
-        return this.list.find(p => p.id === id)
+        return this.list.find((p) => p.id === id)
     }
 
     getProjectByName(name: string) {
-        const project = this.list.find((project) => {
-            return project.name === name
-        })
-        return project
+        return this.list.find((project) => project.name === name)
     }
 
     getTotalCost() {
@@ -88,11 +69,12 @@ export class ProjectsManager {
     deleteProject(id: string) {
         const project = this.getProject(id)
         if (!project) { return }
-        project.ui.remove()
-        const remaining = this.list.filter((project) => {
-            return project.id !== id
-        })
+        
+        const remaining = this.list.filter((project) => project.id !== id)
         this.list = remaining
+        
+        // Notificamos a React para que refresque la lista de tarjetas
+        this.onProjectDeleted()
     }
 
     exportToJSON(fileName: string = "projects") {
@@ -131,6 +113,8 @@ export class ProjectsManager {
         input.click()
     }
 
+    // --- Métodos auxiliares para la página de detalles y To-Dos ---
+    // (Aún presentes mientras se migra la vista de detalle a componentes React)
     setDetailsPage(project: Project) {
         this.currentProject = project
         
@@ -163,21 +147,18 @@ export class ProjectsManager {
         this.renderToDos(project)
     }
 
-    // Agrega este método dentro de tu clase ProjectsManager
     renderToDos(project: Project) {
         const todoListContainer = document.getElementById("todo-list");
         if (!todoListContainer) return;
         
-        // Limpiamos el contenedor antes de dibujar
         todoListContainer.innerHTML = "";
 
-        // Iteramos sobre los To-Dos y creamos el HTML para cada uno
         project.todos.forEach(todo => {
             const todoCard = document.createElement("div");
             todoCard.className = "todo-item";
-            let iconColor = "#686868"; // Por defecto (Pending)
-            if (todo.status === "Active") iconColor = "#facc15"; // Amarillo
-            if (todo.status === "Done") iconColor = "#4ade80";   // Verde
+            let iconColor = "#686868";
+            if (todo.status === "Active") iconColor = "#facc15"; 
+            if (todo.status === "Done") iconColor = "#4ade80";   
             todoCard.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #404040;">
                     <div style="display: flex; column-gap: 15px; align-items: center;">

@@ -25,7 +25,7 @@
     font-size: var(--font-base);
 }
 
-body {
+#app {
     display: grid;
     grid-template-columns: 300px 1fr;
     grid-template-areas: 'sidebar content';
@@ -91,6 +91,11 @@ button:hover {
     height: 65px;
 }
 
+#nav-buttons a{
+  color: white;
+  text-decoration: none;
+}
+
 #nav-buttons {
     display: flex;
     flex-direction: column;
@@ -154,6 +159,11 @@ header {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+}
+
+#projects-list a {
+  color: white;
+  text-decoration: none;
 }
 
 #projects-list {
@@ -226,7 +236,7 @@ label {
 input, textarea, select {
   color: white; 
 	background-color: var(--background-200);
-  padding: 15px; 
+  padding: 8px; 
   border-radius: 8px; 
   border: none;
   font-size: var(--font-base);
